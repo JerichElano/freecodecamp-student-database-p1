@@ -1,81 +1,32 @@
-#! /bin/bash
-
-# Script to insert data from courses.csv and students.csv into students database
-
-PSQL="psql -X --username=freecodecamp --dbname=students --no-align --tuples-only -c"
-
-echo $($PSQL "TRUNCATE students, majors, courses, majors_courses")
-
-# cat reads the file and outputs its contents
-# IFS stands for Internal Field Separator that tells the shell how to split text into separate fields
-cat courses.csv | while IFS="," read MAJOR COURSE
-do
-  if [[ $MAJOR != major ]]
-  then
-    # get major_id 
-    MAJOR_ID=$($PSQL "SELECT major_id FROM majors WHERE major='$MAJOR'")
-
-    # if not found
-    if [[ -z $MAJOR_ID ]]
-    then
-      # insert major
-      INSERT_MAJOR_RESULT=$($PSQL "INSERT INTO majors(major) VALUES('$MAJOR')")
-      if [[ $INSERT_MAJOR_RESULT == "INSERT 0 1" ]]
-      then
-        echo "Inserted into majors, $MAJOR"
-      fi
-      
-      # get new major_id
-      MAJOR_ID=$($PSQL "SELECT major_id FROM majors WHERE major='$MAJOR'")
-    fi
-  
-    # get course_id
-    COURSE_ID=$($PSQL "SELECT course_id FROM courses WHERE course='$COURSE'")
-  
-    # if not found
-    if [[ -z $COURSE_ID ]]
-    then
-      # insert course
-      INSERT_COURSE_RESULT=$($PSQL "INSERT INTO courses(course) VALUES('$COURSE')")
-      if [[ $INSERT_COURSE_RESULT == "INSERT 0 1" ]]
-      then
-        echo "Inserted into courses, $COURSE"
-      fi
-
-      # get new course_id
-      COURSE_ID=$($PSQL "SELECT course_id FROM courses WHERE course='$COURSE'")
-    fi
-
-    # insert into majors_courses
-    INSERT_MAJORS_COURSES_RESULT=$($PSQL "INSERT INTO majors_courses(major_id, course_id) VALUES('$MAJOR_ID', '$COURSE_ID')")
-    if [[ $INSERT_MAJORS_COURSES_RESULT == "INSERT 0 1" ]]
-    then
-      echo "Inserted into majors_courses, $MAJOR : $COURSE"
-    fi
-
-  fi
-done
-
-cat students.csv | while IFS="," read FIRST LAST MAJOR GPA
-do
-  if [[ $FIRST != "first_name" ]]
-  then
-    # get major_id
-    MAJOR_ID=$($PSQL "SELECT major_id FROM majors WHERE major='$MAJOR'")
-
-    # if not found
-    if [[ -z $MAJOR_ID ]]
-    then
-      # set to null
-      MAJOR_ID=null
-    fi
-
-    # insert student
-    INSERT_STUDENT_RESULT=$($PSQL "INSERT INTO students(first_name, last_name, major_id, gpa) VALUES('$FIRST', '$LAST', $MAJOR_ID, $GPA)")
-    if [[ $INSERT_STUDENT_RESULT == "INSERT 0 1" ]]
-    then
-      echo "Inserted into students, $FIRST $LAST"
-    fi
-
-  fi
-done
+first_name,last_name,major,gpa
+Rhea,Kellems,Database Administration,2.5
+Emma,Gilbert,null,null
+Kimberly,Whitley,Web Development,3.8
+Jimmy,Felipe,Database Administration,3.7
+Kyle,Stimson,null,2.8
+Casares,Hijo,Game Design,4.0
+Noe,Savage,null,3.6
+Sterling,Boss,Game Design,3.9
+Brian,Davis,null,2.3
+Kaija,Uronen,Game Design,3.7
+Faye,Conn,Game Design,2.1
+Efren,Reilly,Web Development,3.9
+Danh,Nhung,null,2.4
+Maxine,Hagenes,Database Administration,2.9
+Larry,Saunders,Data Science,2.2
+Karl,Kuhar,Web Development,null
+Lieke,Hazenveld,Game Design,3.5
+Obie,Hilpert,Web Development,null
+Peter,Booysen,null,2.9
+Nathan,Turner,Database Administration,3.3
+Gerald,Osiki,Data Science,2.2
+Vanya,Hassanah,Game Design,4.0
+Roxelana,Florescu,Database Administration,3.2
+Helene,Parker,Data Science,3.4
+Mariana,Russel,Web Development,1.8
+Ajit,Dhungel,null,3.0
+Mehdi,Vandenberghe,Database Administration,1.9
+Dejon,Howell,Web Development,4.0
+Aliya,Gulgowski,System Administration,2.6
+Ana,Tupajic,Data Science,3.1
+Hugo,Duran,null,3.8
